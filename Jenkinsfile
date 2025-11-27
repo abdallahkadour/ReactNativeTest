@@ -1,7 +1,8 @@
 pipeline {
     agent any
     tools {
-        nodejs 'NodeJS' // Name from Global Tool Configuration
+        nodejs 'NodeJS'
+        jdk "Java17" // Name from Global Tool Configuration
     }
 
     environment {
