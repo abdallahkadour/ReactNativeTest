@@ -1,5 +1,8 @@
 pipeline {
     agent any
+     tools {
+        nodejs 'NodeJS_22' // Name from Global Tool Configuration
+    }
 
     environment {
         ANDROID_HOME = '/opt/android-sdk'
