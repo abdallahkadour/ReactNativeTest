@@ -33,25 +33,25 @@ pipeline {
             }
         }
 
-        stage('Clean & Install React Native Packages') {
-            steps {
-                echo ' Cleaning old node_modules and lock files...'
-                sh 'rm -rf node_modules/ package-lock.json yarn.lock'
+        // stage('Clean & Install React Native Packages') {
+        //     steps {
+        //         echo ' Cleaning old node_modules and lock files...'
+        //         sh 'rm -rf node_modules/ package-lock.json yarn.lock'
 
-                echo ' Installing npm packages using absolute path...'
-                // CRITICAL FIX: Absolute path (/usr/bin/npm) bypasses the environment variable lookup failure.
-                sh 'npm install'
-            }
-        }
+        //         echo ' Installing npm packages using absolute path...'
+        //         // CRITICAL FIX: Absolute path (/usr/bin/npm) bypasses the environment variable lookup failure.
+        //         sh 'npm install'
+        //     }
+        // }
 
         stage('Build Android APK') {
             steps {
                 echo ' Cleaning Android build...'
-                sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew clean'
+                sh 'cd android && chmod +x ./gradlew && ./gradlew clean'
 
                 echo ' Building release APK...'
                 // FIX 2: Used --java-launcher with the defined JAVA_HOME to override the project's invalid toolchain configuration.
-                sh "cd android && chmod +x ./gradlew && ./gradlew assembleRelease --no-daemon --java-launcher \"${JAVA_HOME}/bin/java\""
+               sh "cd android && chmod +x ./gradlew && ./gradlew assembleRelease --no-daemon --java-launcher \"${JAVA_HOME}/bin/java\""
             }
         }
 
