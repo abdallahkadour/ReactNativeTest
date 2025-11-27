@@ -12,8 +12,10 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 echo "Cloning the source repository..."
-                // MANDATORY: Clones your specific GitHub repository.
-                git 'https://github.com/abdallahkadour/ReactNativeTest'
+               
+                git branch: 'main', 
+                    credentialsId: '36dc8b7d-7ec1-46c3-a1ac-243b32ffa1e6', // This ID was in your previous log
+                    url: 'https://github.com/abdallahkadour/ReactNativeTest'
             }
         }
 
