@@ -1,29 +1,19 @@
 pipeline {
     agent any
-    tools {
+     tools {
         nodejs 'NodeJS'
         jdk "Java17" // Name from Global Tool Configuration
     }
 
     environment {
         ANDROID_HOME = '/opt/android-sdk'
-        // FIX 1: Added JAVA_HOME to provide a known-good toolchain path for Gradle
-        JAVA_HOME = "/usr/lib/jvm/java-17-openjdk" 
-        
         // FIX: Explicit PATH setup to ensure all tools (npm, gradlew) are found by the Jenkins shell.
-        // MODIFIED: Added ${JAVA_HOME}/bin to the start of the PATH
-        PATH = "${JAVA_HOME}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin:${env.PATH}"
+        PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin:${env.PATH}"
         NODE_OPTIONS = '--max_old_space_size=4096'
     }
 
     stages {
-        stage('Install dependencies') {
-            steps {
-                sh 'node -v'
-                sh 'npm -v'
-                sh 'npm install'
-            }
-        }
+   
         stage('Checkout SCM') {
             steps {
                 echo 'Cloning the source repository...'
@@ -33,18 +23,13 @@ pipeline {
                     url: 'https://github.com/abdallahkadour/ReactNativeTest'
             }
         }
-
-        // stage('Clean & Install React Native Packages') {
+             // stage('Install dependencies') {
         //     steps {
-        //         echo ' Cleaning old node_modules and lock files...'
-        //         sh 'rm -rf node_modules/ package-lock.json yarn.lock'
-
-        //         echo ' Installing npm packages using absolute path...'
-        //         // CRITICAL FIX: Absolute path (/usr/bin/npm) bypasses the environment variable lookup failure.
+        //         sh 'node -v'
+        //         sh 'npm -v'
         //         sh 'npm install'
         //     }
         // }
-
         stage('Build Android APK') {
             steps {
                 echo ' Cleaning Android build...'
@@ -52,7 +37,17 @@ pipeline {
 
                 echo ' Building release APK...'
                 // FIX 2: Used --java-launcher with the defined JAVA_HOME to override the project's invalid toolchain configuration.
-               sh "cd android && chmod +x ./gradlew && ./gradlew assembleRelease --no-daemon --java-launcher \"${JAVA_HOME}/bin/java\""
+                sh "cd android && chmod +x ./gradlew && ./gradlew assembleRelease --no-daemon --java-launcher \"${JAVA_HOME}/bin/java\""
+            }
+        }
+
+        stage('Build Android APK') {
+            steps {
+                echo ' Cleaning Android build...'
+                sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew clean'
+
+                echo ' Building release APK...'
+                sh 'cd android && chmod +x ./gradlew && ./gradlew assembleRelease'
             }
         }
 
@@ -65,11 +60,11 @@ pipeline {
         }
 
     // stage('Upload to Nexus') {
-    //     steps {
-    //         echo "Uploading APK to Nexus Repository..."
-    //         // Final step: Deploy the artifact to Nexus.
-    //         sh 'curl -u admin:admin123 --upload-file android/app/build/outputs/apk/release/app-release.apk http://nexus.local/repository/apk-hosted/app-release.apk'
-    //     }
+    //     steps {
+    //         echo "Uploading APK to Nexus Repository..."
+    //         // Final step: Deploy the artifact to Nexus.
+    //         sh 'curl -u admin:admin123 --upload-file android/app/build/outputs/apk/release/app-release.apk http://nexus.local/repository/apk-hosted/app-release.apk'
+    //     }
     // }
     }
 
