@@ -22,10 +22,8 @@ pipeline {
         }
            stage('Check Gradle Version') {
                 steps {
-                    sh '''
-            cd android
-            ./gradlew --version
-        '''
+                     echo 'gradle version'
+                     sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew --version'
                 }
             }
 
