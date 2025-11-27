@@ -18,7 +18,9 @@ pipeline {
                 sh 'java -version'
                 sh 'javac -version'
             }
-            stage('Check Gradle Version') {
+         
+        }
+           stage('Check Gradle Version') {
                 steps {
                     sh '''
             cd android
@@ -26,7 +28,6 @@ pipeline {
         '''
                 }
             }
-        }
 
         stage('Checkout SCM') {
             steps {
