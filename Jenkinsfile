@@ -46,13 +46,13 @@ pipeline {
             }
         }
 
-        stage('Upload to Nexus') {
-            steps {
-                echo "Uploading APK to Nexus Repository..."
-                // Final step: Deploy the artifact to Nexus.
-                sh 'curl -u admin:admin123 --upload-file android/app/build/outputs/apk/release/app-release.apk http://nexus.local/repository/apk-hosted/app-release.apk'
-            }
-        }
+        // stage('Upload to Nexus') {
+        //     steps {
+        //         echo "Uploading APK to Nexus Repository..."
+        //         // Final step: Deploy the artifact to Nexus.
+        //         sh 'curl -u admin:admin123 --upload-file android/app/build/outputs/apk/release/app-release.apk http://nexus.local/repository/apk-hosted/app-release.apk'
+        //     }
+        // }
     }
 
     post {
