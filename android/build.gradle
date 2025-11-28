@@ -1,10 +1,17 @@
 buildscript {
     ext {
+        // --- Core Android Build Configuration (RN 0.82.1 Compatible) ---
         buildToolsVersion = "36.0.0"
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
+        
+        // Ensure you are using a modern, compatible AGP version
+        // 8.4.1 works well with modern RN and API 36
+        agpVersion = "8.4.1" 
+        
+        // This is a very new version and should be compatible with the AGP above
         kotlinVersion = "2.1.20"
     }
     repositories {
@@ -12,10 +19,38 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        // --- CRITICAL FIX: Now explicitly using the defined versions ---
+        
+        // 1. Android Gradle Plugin (AGP) - Must have a version
+        classpath("com.android.tools.build:gradle:$agpVersion")
+        
+        // 2. The new React Native Gradle Plugin 
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        
+        // 3. Kotlin Gradle Plugin - Must use the defined version
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
+// buildscript {
+//     ext {
+//         buildToolsVersion = "36.0.0"
+//         minSdkVersion = 24
+//         compileSdkVersion = 36
+//         targetSdkVersion = 36
+//         ndkVersion = "27.1.12297006"
+//         kotlinVersion = "2.1.20"
+//     }
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+//     dependencies {
+//         classpath("com.android.tools.build:gradle")
+//         classpath("com.facebook.react:react-native-gradle-plugin")
+//         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+//     }
+// }
+
+// apply plugin: "com.facebook.react.rootproject"
