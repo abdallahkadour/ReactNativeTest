@@ -11,8 +11,9 @@ buildscript {
         // 8.4.1 works well with modern RN and API 36
         agpVersion = "8.4.1" 
         
-        // This is a very new version and should be compatible with the AGP above
-        kotlinVersion = "2.1.20"
+        // FIX: Reverting to a stable, modern Kotlin version (1.9.24) 
+        // as 2.1.20 may be too new for the current RN plugin.
+        kotlinVersion = "1.9.24"
     }
     repositories {
         google()
