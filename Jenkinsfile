@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
         nodejs 'NodeJS'
-       // jdk 'Java17' // Name from Global Tool Configuration
+    // jdk 'Java17' // Name from Global Tool Configuration
     }
 
     environment {
@@ -18,14 +18,13 @@ pipeline {
                 sh 'java -version'
                 sh 'javac -version'
             }
-         
         }
-           stage('Check Gradle Version') {
+        stage('Check Gradle Version') {
                 steps {
-                     echo 'gradle version'
-                     sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew --version'
+                echo 'gradle version'
+                sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew --version'
                 }
-            }
+        }
 
         stage('Checkout SCM') {
             steps {
@@ -36,7 +35,14 @@ pipeline {
                     url: 'https://github.com/abdallahkadour/ReactNativeTest'
             }
         }
-             stage('Install dependencies') {
+       stage('Clean node modules') {
+            steps {
+                echo 'Clean node modules...'
+                sh 'rm -rf node_modules'
+                sh 'npm install'
+            }
+                }
+        stage('Install dependencies') {
             steps {
                 sh 'node -v'
                 sh 'npm -v'
