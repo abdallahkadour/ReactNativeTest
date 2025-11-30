@@ -2,7 +2,6 @@ pipeline {
     agent any
     tools {
         nodejs 'NodeJS'
-    // jdk 'Java17' // Name from Global Tool Configuration
     }
 
     environment {
@@ -19,50 +18,40 @@ pipeline {
                 sh 'javac -version'
             }
         }
+
         stage('Check Gradle Version') {
-                steps {
-                echo 'gradle version'
-                sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew --version'
-                }
+            steps {
+                echo 'Gradle version (using wrapper)...'
+                sh 'cd android && chmod +x ./gradlew && ./gradlew --version'
+            }
         }
 
         stage('Checkout SCM') {
             steps {
                 echo 'Cloning the source repository...'
-
                 git branch: 'main',
-                    credentialsId: '36dc8b7d-7ec1-46c3-a1ac-243b32ffa1e6', // This ID was in your previous log
+                    credentialsId: '36dc8b7d-7ec1-46c3-a1ac-243b32ffa1e6',
                     url: 'https://github.com/abdallahkadour/ReactNativeTest'
             }
         }
 
         stage('Install dependencies') {
             steps {
-                echo 'Clean node modules...'
+                echo 'Cleaning and installing Node modules...'
                 sh 'rm -rf node_modules'
                 sh 'node -v'
                 sh 'npm -v'
                 sh 'npm install'
             }
         }
-        // stage('Build Android APK') {
-        //     steps {
-        //         echo ' Cleaning Android build...'
-        //         sh 'cd android && chmod +x ./gradlew && ./gradlew clean'
-
-        //         echo ' Building release APK...'
-        //         // FIX 2: Used --java-launcher with the defined JAVA_HOME to override the project's invalid toolchain configuration.
-        //         sh "cd android && chmod +x ./gradlew && ./gradlew assembleRelease --no-daemon --java-launcher \"${JAVA_HOME}/bin/java\""
-        //     }
-        // }
 
         stage('Build Android APK') {
             steps {
-                echo ' Cleaning Android build...'
-                sh 'cd android &&  chmod +x ./gradlew  &&  ./gradlew clean'
+                echo 'Cleaning Android build and caches...'
+                sh 'cd android && chmod +x ./gradlew && ./gradlew clean cleanBuildCache'
 
-                echo ' Building release APK...'
-                sh 'cd android && chmod +x ./gradlew && ./gradlew assembleRelease'
+                echo 'Building release APK with Java 17...'
+                sh 'cd android && chmod +x ./gradlew && ./gradlew assembleRelease -Dorg.gradle.java.home=/opt/jdk17'
             }
         }
 
@@ -70,22 +59,14 @@ pipeline {
             steps {
                 echo 'Archiving release APK...'
                 archiveArtifacts artifacts: 'android/app/build/outputs/apk/release/app-release.apk', fingerprint: true
-                echo ' APK archived successfully!'
+                echo 'APK archived successfully!'
             }
         }
-
-    // stage('Upload to Nexus') {
-    //     steps {
-    //         echo "Uploading APK to Nexus Repository..."
-    //         // Final step: Deploy the artifact to Nexus.
-    //         sh 'curl -u admin:admin123 --upload-file android/app/build/outputs/apk/release/app-release.apk http://nexus.local/repository/apk-hosted/app-release.apk'
-    //     }
-    // }
     }
 
     post {
         success {
-            echo ' Android build and deployment completed successfully!'
+            echo 'Android build and deployment completed successfully!'
         }
         failure {
             echo 'Error: Android build failed!'
