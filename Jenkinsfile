@@ -5,7 +5,7 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME = '/opt/jdk17'
+        JAVA_HOME = '/opt/java/openjdk'
         ANDROID_HOME = '/opt/android-sdk'
         PATH = "${JAVA_HOME}/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         NODE_OPTIONS = '--max_old_space_size=4096'
