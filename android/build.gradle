@@ -1,10 +1,10 @@
 buildscript {
     ext {
         // --- Core Android Build Configuration (RN 0.82.1 Compatible) ---
-        buildToolsVersion = "36.0.0"
+        buildToolsVersion = "34.0.0"
         minSdkVersion = 24
-        compileSdkVersion = 36
-        targetSdkVersion = 36
+        compileSdkVersion = 34
+        targetSdkVersion = 34
         ndkVersion = "27.1.12297006"
         
         // Ensure you are using a modern, compatible AGP version
