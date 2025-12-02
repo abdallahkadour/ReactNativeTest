@@ -6,6 +6,9 @@ pipeline {
     ANDROID_HOME = '/opt/android-sdk'
     PATH = "${JAVA_HOME}/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     NODE_OPTIONS = '--max_old_space_size=4096'
+    // CRITICAL FIX: Explicitly define the full path to the NDK we confirmed should be installed.
+    // This property will be passed to Gradle to bypass the failing NDK installation check.
+    NDK_FULL_PATH = '/opt/android-sdk/ndk/27.1.12297006' 
   }
 
   stages {
@@ -53,6 +56,18 @@ pipeline {
       }
     }
 
+    stage('Checkout SCM') {
+      steps {
+        sh 'find /var/jenkins_home/tools -name "git" -executable -type f'
+        sh "chmod +x /var/jenkins_home/tools"
+        echo 'Cloning the source repository...'
+        git branch: 'main',
+          credentialsId: '25a28d84-e151-45ac-a438-f42b885f8e26',
+          url: 'https://dev.azure.com/netways-uae/CST-10237/_git/mojapp'
+      }
+    }
+
+    
     stage('Check Gradle Version') {
       steps {
         echo 'Gradle version (using wrapper)...'
@@ -60,14 +75,6 @@ pipeline {
       }
     }
 
-    stage('Checkout SCM') {
-      steps {
-        echo 'Cloning the source repository...'
-        git branch: 'main',
-          credentialsId: '36dc8b7d-7ec1-46c3-a1ac-243b32ffa1e6',
-          url: 'https://github.com/abdallahkadour/ReactNativeTest'
-      }
-    }
 
     stage('Install dependencies') {
       steps {
@@ -78,27 +85,27 @@ pipeline {
         sh 'node -v'
         sh 'npm -v'
         sh 'npm install --legacy-peer-deps'
-        // generate autolinking
-      
-       // sh 'npx react-native autolink'
       }
     }
 
     stage('Build Android APK') {
       steps {
-        echo 'Cleaning Android build and caches...'
-        sh 'cd android && chmod +x ./gradlew && ./gradlew clean cleanBuildCache'
-sh 'cd android && ./gradlew :app:generatePackageList'
-        echo 'Building release APK with Java 17...'
-       
-        // sh '''
-        //             cd android
-        //             chmod +x ./gradlew
-        //             ./gradlew :app:generateAutolinking --quiet || true
-        //         '''
-        //         // Verify the file was created
-        //        // sh 'test -f android/build/generated/autolinking/autolinking.json && echo "autolinking.json generated!" || (echo "autolinking.json STILL missing!" && exit 1)'
-        sh './gradlew assembleRelease --stacktrace --info'
+        echo 'Cleaning and building Android Release APK (Forcing NDK Path)...'
+        sh """
+            cd android
+            chmod +x ./gradlew
+            
+            # We are explicitly setting the NDK path using -Pandroid.ndkPath to bypass the read-only check.
+            
+            # 1. Clean build artifacts and cache
+            ./gradlew clean cleanBuildCache -Pandroid.ndkPath=\${NDK_FULL_PATH}
+
+            # 2. Generate package list (as specified in your original script)
+            ./gradlew :app:generatePackageList -Pandroid.ndkPath=\${NDK_FULL_PATH}
+
+            # 3. Final release build (using --stacktrace and --info for verbosity)
+            ./gradlew assembleRelease --stacktrace --info -Pandroid.ndkPath=\${NDK_FULL_PATH}
+        """
       }
     }
 
