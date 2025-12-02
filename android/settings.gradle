@@ -1,3 +1,5 @@
+// android/settings.gradle
+
 pluginManagement {
     repositories {
         google()
@@ -16,8 +18,8 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = 'JenkinsTest'
-include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
 
-apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
-applyNativeModulesSettingsGradle(settings)
+include ':app'
+
+// This is the ONLY thing you need for the new React Native Gradle plugin
+includeBuild('../node_modules/@react-native/gradle-plugin')
