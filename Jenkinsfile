@@ -98,10 +98,10 @@ stage('Build Android APK') {
         dir('android') {
             sh 'chmod +x ./gradlew'
 
-            // THIS IS THE ONLY LINE THAT MATTERS IN RN 0.82+
-            sh './gradlew :app:preBuild --no-daemon'
+            // WORKAROUND FOR RN 0.80+ AUTOLINKING BUG (from GitHub issue #46069)
+            sh 'mkdir -p build/generated/autolinking'
 
-            // Now the real build works (autolinking.json is created)
+            // Now run the build — autolinking.json will generate correctly
             sh './gradlew assembleDebug --no-daemon'
         }
     }
