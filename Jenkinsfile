@@ -90,9 +90,8 @@ pipeline {
         sh 'cd android && chmod +x ./gradlew && ./gradlew clean cleanBuildCache'
 
         echo 'Building release APK with Java 17...'
-        sh 'npx react-native generate-android
-'
-        // # sh 'cd android && chmod +x ./gradlew && ./gradlew assembleRelease -Dorg.gradle.java.home=/opt/jdk17'
+        sh 'npx react-native generate-android' 
+       
         // sh '''
         //             cd android
         //             chmod +x ./gradlew
