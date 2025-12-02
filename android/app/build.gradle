@@ -75,16 +75,19 @@ def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk 34
+    compileSdkVersion 34
 
     namespace "com.jenkinstest"
     defaultConfig {
         applicationId "com.jenkinstest"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        compileSdk rootProject.ext.compileSdkVersion
+        compileSdkVersion rootProject.ext.compileSdkVersion
         versionCode 1
         versionName "1.0"
+    }
+    react {
+        autolinkLibrariesWithApp()
     }
     signingConfigs {
         debug {
