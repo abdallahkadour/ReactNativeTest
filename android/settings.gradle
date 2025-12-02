@@ -8,18 +8,32 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("com.facebook.react.settings")
+}
+
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+    ex.autolinkLibrariesFromCommand()
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://www.jitpack.io' }
+        maven { url = uri("../node_modules/react-native/android") }
+        maven { url = uri("../node_modules/jsc-android/dist") }
+        maven { url = uri("https://www.jitpack.io") }
     }
 }
 
 rootProject.name = 'JenkinsTest'
-
 include ':app'
 
-// This is the ONLY thing you need for the new React Native Gradle plugin
-includeBuild('../node_modules/@react-native/gradle-plugin')
+// Conditionally include React Native Gradle Plugin
+def gradlePluginPath = file("../node_modules/@react-native/gradle-plugin")
+if (gradlePluginPath.exists()) {
+    includeBuild("../node_modules/@react-native/gradle-plugin")
+} else {
+    logger.warn("React Native Gradle Plugin not found at: ${gradlePluginPath.absolutePath}")
+}

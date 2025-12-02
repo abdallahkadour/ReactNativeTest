@@ -76,19 +76,17 @@ android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdkVersion 34
+    compileSdk 34
 
     namespace "com.jenkinstest"
     defaultConfig {
         applicationId "com.jenkinstest"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        compileSdkVersion rootProject.ext.compileSdkVersion
         versionCode 1
         versionName "1.0"
     }
-    react {
-        autolinkLibrariesWithApp()
-    }
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')

@@ -93,16 +93,20 @@ pipeline {
     }
 }
 
+stage('Generate Autolinking') {
+    steps {
+        echo 'Generating React Native autolinking configuration...'
+        sh 'mkdir -p build/generated/autolinking'
+        sh 'npx react-native config'
+        sh 'cat android/build/generated/autolinking/autolinking.json || echo "Autolinking file not created yet"'
+    }
+}
+
 stage('Build Android APK') {
     steps {
         dir('android') {
             sh 'chmod +x ./gradlew'
-
-            // WORKAROUND FOR RN 0.80+ AUTOLINKING BUG (from GitHub issue #46069)
-            sh 'mkdir -p build/generated/autolinking'
-
-            // Now run the build — autolinking.json will generate correctly
-            sh './gradlew assembleDebug --no-daemon'
+            sh './gradlew assembleDebug --no-daemon --stacktrace'
         }
     }
 }
