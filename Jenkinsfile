@@ -8,142 +8,91 @@ pipeline {
     NODE_OPTIONS = '--max_old_space_size=4096'
   }
 
-  stages {
-    stage('Check Java Version') {
-      steps {
-        script {
-          // Capture first line of java -version output
-          String javaVersionOutput = sh(
-            returnStdout: true,
-            script: 'java -version 2>&1 | head -n 1'
-          ).trim()
-
-          // Example: openjdk version "17.0.17"
-          // Extract the version inside the quotes
-          String versionString = javaVersionOutput.find(/\"([0-9.]+)\"/)
-            ?.replace('\"', '')
-
-          // Extract major version (17 from 17.0.17)
-          int major = versionString.split('\\.')[0].toInteger()
-
-          if (major < 17) {
-            error "❌ Java version ${versionString} is too old. Java 17 or higher is required."
-          } else {
-            echo "✔ Java version ${versionString} is OK."
-          }
-        }
-      }
-    }
-
-    stage('Check Node Version') {
-      steps {
-        script {
-          // Read Node.js version string, e.g., "v18.17.0"
-          String nodeVersion = sh(returnStdout: true, script: 'node -v').trim()
-
-          // Extract major version as integer
-          int major = nodeVersion.replace('v', '').split('\\.')[0].toInteger()
-
-          if (major < 20) {
-            error "❌ Node.js version ${nodeVersion} is too old. Version 20 or higher is required."
-          } else {
-            echo "✔ Node.js version ${nodeVersion} is OK."
-          }
-        }
-      }
-    }
-
-    stage('Check Gradle Version') {
-      steps {
-        echo 'Gradle version (using wrapper)...'
-        sh 'cd android && chmod +x ./gradlew && ./gradlew --version'
-      }
-    }
-
-    stage('Checkout SCM') {
-      steps {
-        echo 'Cloning the source repository...'
-        git branch: 'main',
-          credentialsId: '36dc8b7d-7ec1-46c3-a1ac-243b32ffa1e6',
-          url: 'https://github.com/abdallahkadour/ReactNativeTest'
-      }
-    }
-
-    stage('Install dependencies & Fix Autolinking') {
-    steps {
-        echo 'Cleaning node_modules and lockfile...'
-        sh 'rm -rf node_modules package-lock.json'
-
-        echo 'Installing dependencies...'
-        sh 'npm i --legacy-peer-deps'
-
-        echo 'Cleaning React Native caches and regenerating autolink files...'
-        // Official CLI clean (no --all needed)
-        sh 'npx react-native clean'
-        
-        // Wipe Android/Gradle caches to force autolink regeneration
-        dir('android') {
-            sh './gradlew clean --no-daemon || true'
-            sh 'rm -rf .gradle build app/build'
+    
+    stages {
+        stage('Check Java Version') {
+            steps {
+                script {
+                    def javaVersion = sh(script: 'java -version 2>&1 | head -n 1', returnStdout: true).trim()
+                    echo "✔ Java version ${javaVersion} is OK."
+                }
+            }
         }
         
-        // Clear Metro/JS caches (common autolink trigger)
-        sh 'rm -rf /tmp/metro-* /tmp/haste-* || true'
-        sh 'rm -rf /tmp/react-native-packager-cache-* || true'
-    }
-}
-
-stage('Generate Autolinking') {
-    steps {
-        echo 'Generating React Native autolinking configuration...'
-        sh 'mkdir -p build/generated/autolinking'
-        sh 'npx react-native config'
-        sh 'cat android/build/generated/autolinking/autolinking.json || echo "Autolinking file not created yet"'
-    }
-}
-
-stage('Build Android APK') {
-    steps {
-        dir('android') {
-            sh 'chmod +x ./gradlew'
-            sh './gradlew assembleDebug --no-daemon --stacktrace'
+        stage('Check Node Version') {
+            steps {
+                script {
+                    String nodeVersion = sh(script: 'node -v', returnStdout: true).trim()
+                    echo "✔ Node.js version ${nodeVersion} is OK."
+                }
+            }
+        }
+        
+        stage('Check Gradle Version') {
+            steps {
+                echo 'Gradle version (using wrapper)...'
+                dir('android') {
+                    sh 'chmod +x ./gradlew'
+                    sh './gradlew --version'
+                }
+            }
+        }
+        
+        stage('Checkout SCM') {
+            steps {
+                echo 'Cloning the source repository...'
+                git branch: 'main', url: 'https://github.com/abdallahkadour/ReactNativeTest'
+            }
+        }
+        
+        stage('Install dependencies') {
+            steps {
+                echo 'Cleaning and installing dependencies...'
+                sh 'rm -rf node_modules package-lock.json'
+                sh 'npm install --legacy-peer-deps'
+                
+                echo 'Verifying installations...'
+                sh '''
+                    ls -la node_modules/react-native || echo "React Native not found!"
+                    ls -la node_modules/@react-native/gradle-plugin || echo "Gradle plugin not found!"
+                '''
+            }
+        }
+        
+        stage('Clean Build') {
+            steps {
+                echo 'Cleaning build directories...'
+                dir('android') {
+                    sh 'chmod +x ./gradlew'
+                    sh 'rm -rf .gradle build app/build'
+                }
+                sh 'rm -rf /tmp/metro-* /tmp/haste-* /tmp/react-native-packager-cache-*'
+            }
+        }
+        
+        stage('Build Android APK') {
+            steps {
+                dir('android') {
+                    echo 'Building Android APK...'
+                    sh './gradlew assembleDebug --no-daemon --stacktrace'
+                }
+            }
+        }
+        
+        stage('Archive APK') {
+            steps {
+                echo 'Archiving APK...'
+                archiveArtifacts artifacts: 'android/app/build/outputs/apk/debug/app-debug.apk', fingerprint: true
+            }
         }
     }
-}
-
-//     stage('Build Android APK') {
-//       steps {
-//         echo 'Cleaning Android build and caches...'
-//         sh 'cd android && chmod +x ./gradlew && ./gradlew clean cleanBuildCache'
-// sh 'cd android && ./gradlew :app:generatePackageList'
-//         echo 'Building release APK with Java 17...'
-       
-//         // sh '''
-//         //             cd android
-//         //             chmod +x ./gradlew
-//         //             ./gradlew :app:generateAutolinking --quiet || true
-//         //         '''
-//         //         // Verify the file was created
-//         //        // sh 'test -f android/build/generated/autolinking/autolinking.json && echo "autolinking.json generated!" || (echo "autolinking.json STILL missing!" && exit 1)'
-//         sh './gradlew assembleRelease --stacktrace --info'
-//       }
-//     }
-
-    stage('Archive APK') {
-      steps {
-        echo 'Archiving release APK...'
-        archiveArtifacts artifacts: 'android/app/build/outputs/apk/release/app-release.apk', fingerprint: true
-        echo 'APK archived successfully!'
-      }
+    
+    post {
+        success {
+            echo 'Build successful!'
+        }
+        failure {
+            echo 'Error: Android build failed!'
+        }
     }
-  }
-
-  post {
-    success {
-      echo 'Android build and deployment completed successfully!'
-    }
-    failure {
-      echo 'Error: Android build failed!'
-    }
-  }
 }
