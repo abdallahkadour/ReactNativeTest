@@ -1,14 +1,12 @@
-// android/build.gradle
+// android/build.gradle   ← root project, not the app one
 
 buildscript {
     ext {
-        // Your values (perfectly fine for RN 0.82.1)
         buildToolsVersion = "34.0.0"
         minSdkVersion     = 24
         compileSdkVersion = 34
         targetSdkVersion  = 34
         ndkVersion        = "27.1.12297006"
-
         agpVersion        = "8.4.1"
         kotlinVersion     = "1.9.24"
     }
@@ -18,20 +16,16 @@ buildscript {
     }
     dependencies {
         classpath("com.android.tools.build:gradle:$agpVersion")
-        classpath("com.facebook.reactnative:react-native-gradle-plugin")   // correct new coordinates
+        // THIS IS THE CORRECT ONE
+        classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
-// This single line is all you need for React Native 0.80+
+// This single line is required for RN 0.73+
 apply plugin: "com.facebook.react.rootproject"
 
-// ──────────────────────────────────────────────────────────────
-// CRITICAL: DELETE OR EMPTY THE allprojects BLOCK
-// ──────────────────────────────────────────────────────────────
-// Because you set RepositoriesMode.FAIL_ON_PROJECT_REPOS in settings.gradle,
-// Gradle is no longer allowed to see repositories here.
-
+// DO NOT add any repositories here anymore
 allprojects {
-    // ←←← LEAVE THIS BLOCK COMPLETELY EMPTY (or delete the whole block)
+    // intentionally empty
 }
