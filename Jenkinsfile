@@ -79,7 +79,7 @@ pipeline {
         sh 'npm -v'
         sh 'npm install --legacy-peer-deps'
         // generate autolinking
-        sh 'npx react-native prebuild'
+        sh 'npx react-native prebuild --verbose'
       }
     }
 
