@@ -69,20 +69,21 @@ pipeline {
       }
     }
 
-    stage('Install dependencies') {
-      steps {
-        echo 'Cleaning and installing Node modules...'
-        sh 'rm -rf node_modules'
-        sh 'rm -f package-lock.json'
-        sh 'npm cache clean --force'
-        sh 'node -v'
-        sh 'npm -v'
-        sh 'npm install --legacy-peer-deps'
-        // generate autolinking
-      
-       // sh 'npx react-native autolink'
-      }
+    stage('Install dependencies & Fix Autolinking') {
+    steps {
+        echo 'Cleaning node_modules and lockfile...'
+        sh 'rm -rf node_modules package-lock.json'
+
+        echo 'Installing dependencies...'
+        sh 'npm ci --legacy-peer-deps'
+
+        echo 'Cleaning React Native caches and regenerating autolink files...'
+        sh 'npx react-native clean --all'   // This is the magic line
+
+        // Optional: extra safety for very stubborn cases
+        sh 'cd android && ./gradlew clean || true'
     }
+}
 
     stage('Build Android APK') {
       steps {
